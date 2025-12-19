@@ -14,37 +14,10 @@ import {
 import { motion } from 'framer-motion';
 import StatusBadge from '@/components/ui/StatusBadge';
 import DataTable from '@/components/ui/DataTable';
-import { preparationTimes } from '@/data/mockData';
 
 const CookingSchedule = () => {
-    const [schedule, setSchedule] = React.useState([]);
-    const [isLoading, setIsLoading] = React.useState(true);
-    const [error, setError] = React.useState(null);
-
-    React.useEffect(() => {
-        const fetchSchedule = async () => {
-            try {
-                setIsLoading(true);
-                setError(null);
-
-                const token = localStorage.getItem('auth_token');
-                const BASE_URL = import.meta.env.VITE_BASE_URL || 'https://backend-t08o.onrender.com/api';
-                const response = await fetch(`${BASE_URL}/admin/schedule/today`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-                const data = await response.json();
-                setSchedule(data.data || []);
-                setIsLoading(false);
-            } catch (error) {
-                console.error('Error fetching schedule:', error);
-                setIsLoading(false);
-            }
-        };
-
-        fetchSchedule();
-    }, []);
+    const { data: scheduleResponse, isLoading, error } = useSchedule();
+    const schedule = scheduleResponse?.data || [];
 
     if (isLoading) {
         return (
@@ -55,7 +28,12 @@ const CookingSchedule = () => {
         );
     }
 
-    const prepTimes = preparationTimes;
+    // Compute preparation times from schedule data
+    const prepTimes = schedule.map(meal => ({
+        meal: meal.mealName?.substring(0, 15) + '...' || 'Unknown',
+        duration: 120, // Default 2 hours, can be computed from start/end time if available
+        mealType: meal.mealType
+    }));
 
     const columns = [
         {
@@ -205,17 +183,33 @@ const CookingSchedule = () => {
                                 <Play size={20} fill="currentColor" />
                                 Current Active Unit
                             </h3>
-                            <div className="p-4 rounded-2xl bg-white/10 border border-white/10 backdrop-blur-md mb-4">
-                                <p className="text-xs font-bold text-white/70 uppercase tracking-widest mb-1">In Production</p>
-                                <h4 className="text-xl font-bold mb-4">Chicken Biryani</h4>
-                                <div className="flex items-center gap-3">
-                                    <div className="flex-1 h-2 bg-white/10 rounded-full overflow-hidden">
-                                        <motion.div initial={{ width: 0 }} animate={{ width: "75%" }} className="h-full bg-white shadow-glow" />
-                                    </div>
-                                    <span className="text-xs font-bold">75%</span>
+                            {schedule.find(m => m.status === 'in-progress') || schedule.find(m => m.status === 'pending') ? (
+                                (() => {
+                                    const activeMeal = schedule.find(m => m.status === 'in-progress') || schedule.find(m => m.status === 'pending');
+                                    return (
+                                        <div className="p-4 rounded-2xl bg-white/10 border border-white/10 backdrop-blur-md mb-4">
+                                            <p className="text-xs font-bold text-white/70 uppercase tracking-widest mb-1">
+                                                {activeMeal.status === 'in-progress' ? 'In Production' : 'Up Next'}
+                                            </p>
+                                            <h4 className="text-xl font-bold mb-4">{activeMeal.mealName}</h4>
+                                            <div className="flex items-center gap-3">
+                                                <div className="flex-1 h-2 bg-white/10 rounded-full overflow-hidden">
+                                                    <motion.div
+                                                        initial={{ width: 0 }}
+                                                        animate={{ width: activeMeal.status === 'in-progress' ? "65%" : "0%" }}
+                                                        className="h-full bg-white shadow-glow"
+                                                    />
+                                                </div>
+                                                <span className="text-xs font-bold">{activeMeal.status === 'in-progress' ? '65%' : '0%'}</span>
+                                            </div>
+                                        </div>
+                                    );
+                                })()
+                            ) : (
+                                <div className="p-6 rounded-2xl bg-white/5 border border-white/10 text-center">
+                                    <p className="text-sm font-bold text-white/60">No Active Production</p>
                                 </div>
-                            </div>
-
+                            )}
                         </div>
                         <div className="absolute top-0 right-0 opacity-10 -mr-8 -mt-8 scale-150 rotate-12">
                             <ChefHat size={150} />
@@ -242,12 +236,14 @@ const CookingSchedule = () => {
                                 </BarChart>
                             </ResponsiveContainer>
                         </div>
-                        <div className="mt-4 flex items-center gap-3 p-3 rounded-xl bg-success/5 border border-success/10">
-                            <div className="p-2 rounded-lg bg-success/10 text-success">
-                                <TrendingUp size={16} />
+                        {schedule.length > 0 && (
+                            <div className="mt-4 flex items-center gap-3 p-3 rounded-xl bg-success/5 border border-success/10">
+                                <div className="p-2 rounded-lg bg-success/10 text-success">
+                                    <TrendingUp size={16} />
+                                </div>
+                                <p className="text-[10px] font-bold text-success capitalize">Preparation efficiency is being tracked based on current schedule.</p>
                             </div>
-                            <p className="text-[10px] font-bold text-success capitalize">Preparation speed increased by 14% compared to yesterday</p>
-                        </div>
+                        )}
                     </div>
 
 

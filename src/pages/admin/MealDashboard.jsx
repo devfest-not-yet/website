@@ -7,41 +7,11 @@ import {
 import { UtensilsCrossed, Users, AlertTriangle, TrendingUp, Calendar, Zap, ArrowUpRight, ChefHat, Package, Utensils, CheckCircle2, Loader2 } from 'lucide-react';
 import { useAnalytics } from '@/hooks/useAdmin';
 import MetricCard from '@/components/ui/MetricCard';
-import {
-    dashboardMetrics,
-    dailyMealDistribution,
-    stockLevelsOverview,
-    weeklyMealTrends,
-} from '@/data/mockData';
 import { motion } from 'framer-motion';
 
 const MealDashboard = () => {
-    const [analytics, setAnalytics] = React.useState(null);
-    const [isLoading, setIsLoading] = React.useState(true);
-    const [error, setError] = React.useState(null);
-
-    React.useEffect(() => {
-        const fetchAnalytics = async () => {
-            try {
-                const token = localStorage.getItem('auth_token');
-                const BASE_URL = import.meta.env.VITE_BASE_URL || 'https://backend-t08o.onrender.com/api';
-                const response = await fetch(`${BASE_URL}/admin/analytics`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-                const data = await response.json();
-                setAnalytics(data.data);
-                setIsLoading(false);
-            } catch (err) {
-                console.error('Error fetching analytics:', err);
-                setError(err);
-                setIsLoading(false);
-            }
-        };
-
-        fetchAnalytics();
-    }, []);
+    const { data: analyticsResponse, isLoading, error } = useAnalytics();
+    const analytics = analyticsResponse?.data;
 
     if (isLoading) {
         return (
@@ -70,9 +40,20 @@ const MealDashboard = () => {
         );
     }
 
-    const mealDistribution = dailyMealDistribution;
-    const stockOverview = stockLevelsOverview;
-    const weeklyTrends = weeklyMealTrends;
+    // Computed data from analytics response or fallback to empty arrays
+    const mealDistribution = analytics?.mealDistribution || [
+        { meal: 'Breakfast', count: 0, capacity: 500 },
+        { meal: 'Lunch', count: 0, capacity: 600 },
+        { meal: 'Dinner', count: 0, capacity: 500 }
+    ];
+
+    const stockOverview = analytics?.stockOverview || [
+        { name: 'In Stock', value: 0, color: '#10b981' },
+        { name: 'Low Stock', value: 0, color: '#f59e0b' },
+        { name: 'Out of Stock', value: 0, color: '#ef4444' }
+    ];
+
+    const weeklyTrends = analytics?.weeklyTrends || [];
 
     const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
@@ -87,7 +68,9 @@ const MealDashboard = () => {
                 <div className="flex items-center gap-3">
                     <div className="px-4 py-2 rounded-xl bg-primary/10 border border-primary/20 flex items-center gap-2">
                         <Calendar className="w-4 h-4 text-primary" />
-                        <span className="text-sm font-bold text-primary">Dec 19, 2025</span>
+                        <span className="text-sm font-bold text-primary">
+                            {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        </span>
                     </div>
                 </div>
             </div>
@@ -99,19 +82,19 @@ const MealDashboard = () => {
                     title="Active Attendees"
                     value={analytics?.totalStudents?.toLocaleString() || '0'}
                     icon={Users}
-                    trend={{ value: "+3%", isPositive: true }}
+                    trend={analytics?.trends?.activeAttendees}
                 />
                 <MetricCard
                     title="Today's Pickups"
                     value={analytics?.todayPickups?.toLocaleString() || '0'}
                     icon={Zap}
-                    trend={{ value: "Live", isPositive: true }}
+                    trend={analytics?.trends?.todayPickups || { value: "Live", isPositive: true }}
                 />
                 <MetricCard
                     title="Meals Assigned"
                     value={`${analytics?.todayMeals || 0} / ${analytics?.totalStudents || 0}`}
                     icon={CheckCircle2}
-                    trend={{ value: "AI Optimized", isPositive: true }}
+                    trend={analytics?.trends?.mealsAssigned || { value: "AI Optimized", isPositive: true }}
                 />
                 <motion.div
                     whileHover={{ y: -4 }}
@@ -126,9 +109,7 @@ const MealDashboard = () => {
                         <h3 className="text-3xl font-bold tracking-tight text-white">{(analytics?.pickupRate || 0).toFixed(1)}%</h3>
                         <div className="h-10 mt-2">
                             <ResponsiveContainer width="100%" height="100%">
-                                <AreaChart data={[
-                                    { v: 85 }, { v: 88 }, { v: 92 }, { v: 90 }, { v: 94 }, { v: 93 }, { v: (analytics?.pickupRate || 94.2) }
-                                ]}>
+                                <AreaChart data={analytics?.efficiencyTrend || []}>
                                     <Area type="monotone" dataKey="v" stroke="#fff" strokeWidth={2} fillOpacity={0} />
                                 </AreaChart>
                             </ResponsiveContainer>
@@ -290,24 +271,24 @@ const MealDashboard = () => {
                         <h4 className="font-bold">AI Stock Insights</h4>
                     </div>
                     <div className="space-y-4 relative z-10">
-                        <div className="p-3 rounded-xl bg-muted/30 border border-border/50">
-                            <div className="flex justify-between items-center mb-2">
-                                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Chicken Breast</span>
-                                <span className="text-xs font-bold text-amber-600 px-2 py-0.5 bg-amber-500/10 rounded-full">Low Stock</span>
+                        {analytics?.lowStockItems?.length > 0 ? (
+                            analytics.lowStockItems.slice(0, 3).map((item, i) => (
+                                <div key={i} className="p-3 rounded-xl bg-muted/30 border border-border/50">
+                                    <div className="flex justify-between items-center mb-2">
+                                        <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{item.name}</span>
+                                        <span className="text-xs font-bold text-amber-600 px-2 py-0.5 bg-amber-500/10 rounded-full">Low Stock</span>
+                                    </div>
+                                    <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+                                        <motion.div initial={{ width: 0 }} animate={{ width: `${(item.currentStock / 50) * 100}%` }} className="h-full bg-amber-500" />
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <div className="p-8 text-center bg-emerald-500/5 rounded-2xl border border-dashed border-emerald-500/20">
+                                <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto mb-2 opacity-50" />
+                                <p className="text-xs font-bold text-emerald-600">All stock levels are currently within safe thresholds.</p>
                             </div>
-                            <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
-                                <motion.div initial={{ width: 0 }} animate={{ width: "24%" }} className="h-full bg-amber-500" />
-                            </div>
-                        </div>
-                        <div className="p-3 rounded-xl bg-muted/30 border border-border/50">
-                            <div className="flex justify-between items-center mb-2">
-                                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Rice Basmati</span>
-                                <span className="text-xs font-bold text-emerald-600 px-2 py-0.5 bg-emerald-500/10 rounded-full">Solid</span>
-                            </div>
-                            <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
-                                <motion.div initial={{ width: 0 }} animate={{ width: "88%" }} className="h-full bg-emerald-500" />
-                            </div>
-                        </div>
+                        )}
                     </div>
                     <div className="absolute top-2 right-2 opacity-5 scale-150 pointer-events-none">
                         <Zap size={120} />

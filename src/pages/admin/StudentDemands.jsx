@@ -3,33 +3,13 @@ import { Users, Search, Filter, Info, ChevronRight, CheckCircle2, AlertCircle, C
 import DataTable from '@/components/ui/DataTable';
 import { motion, AnimatePresence } from 'framer-motion';
 
+import { useStudentDemands } from '@/hooks/useAdmin';
+
 const StudentDemands = () => {
-    const [students, setStudents] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const { data: studentsResponse, isLoading } = useStudentDemands();
+    const students = studentsResponse?.data || [];
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedStudent, setSelectedStudent] = useState(null);
-
-    useEffect(() => {
-        const fetchStudents = async () => {
-            try {
-                const token = localStorage.getItem('auth_token');
-                const BASE_URL = import.meta.env.VITE_BASE_URL || 'https://backend-t08o.onrender.com/api';
-                const response = await fetch(`${BASE_URL}/admin/students-with-assignments`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-                const data = await response.json();
-                setStudents(data.data || []);
-                setIsLoading(false);
-            } catch (error) {
-                console.error('Error fetching students:', error);
-                setIsLoading(false);
-            }
-        };
-
-        fetchStudents();
-    }, []);
 
     const filteredStudents = students.filter(student =>
         student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||

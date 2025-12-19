@@ -1,28 +1,19 @@
 import React, { useState } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, RadialBarChart, RadialBar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, RadarChart } from 'recharts';
 import { Utensils, Apple, ChefHat, Info, Zap, Target, Sparkles, Loader2 } from 'lucide-react';
-import { dailyMenu, nutritionalDistribution } from '@/data/mockData';
 import { motion } from 'framer-motion';
 import { adminApi } from '@/api/adminApi';
+import { useMenu } from '@/hooks/useAdmin';
 
 const MenuPlanner = () => {
     const [isProcessing, setIsProcessing] = useState(false);
-    const [menu, setMenu] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const { data: menuResponse, isLoading } = useMenu();
 
     const handleAIGenerate = async () => {
         try {
             setIsProcessing(true);
-            const token = localStorage.getItem('auth_token');
-            const BASE_URL = import.meta.env.VITE_BASE_URL || 'https://backend-t08o.onrender.com/api';
-            const response = await fetch(`${BASE_URL}/ai/process-daily`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-            const data = await response.json();
-            alert(data.message || 'AI Processing started successfully!');
+            await adminApi.triggerAI();
+            alert('AI Processing started successfully!');
         } catch (error) {
             console.error('AI Processing failed:', error);
             alert('Failed to trigger AI Processing. Please check the backend.');
@@ -31,47 +22,50 @@ const MenuPlanner = () => {
         }
     };
 
-
-    React.useEffect(() => {
-        const fetchMenu = async () => {
-            try {
-                const token = localStorage.getItem('auth_token');
-                const BASE_URL = import.meta.env.VITE_BASE_URL || 'https://backend-t08o.onrender.com/api';
-                const response = await fetch(`${BASE_URL}/admin/menu/today`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-                const data = await response.json();
-
-                // transform backend object structure to array structure
-                const flattenedMenu = [];
-                if (data.data) {
-                    ['breakfast', 'lunch', 'dinner'].forEach(type => {
-                        if (data.data[type]) {
-                            data.data[type].forEach(meal => {
-                                flattenedMenu.push({
-                                    ...meal,
-                                    mealName: meal.name,
-                                    mealType: type
-                                });
-                            });
-                        }
+    // transform backend object structure to array structure
+    const menu = React.useMemo(() => {
+        const flattenedMenu = [];
+        const menuData = menuResponse?.data;
+        if (menuData) {
+            ['breakfast', 'lunch', 'dinner'].forEach(type => {
+                if (menuData[type]) {
+                    menuData[type].forEach(meal => {
+                        flattenedMenu.push({
+                            ...meal,
+                            mealName: meal.name,
+                            mealType: type
+                        });
                     });
                 }
+            });
+        }
+        return flattenedMenu;
+    }, [menuResponse]);
 
-                setMenu(flattenedMenu);
-                setIsLoading(false);
-            } catch (error) {
-                console.error('Error fetching menu:', error);
-                setIsLoading(false);
+    // Compute nutritional distribution from actual menu data
+    const nutritionData = menu.length > 0 ? (() => {
+        const totals = menu.reduce((acc, meal) => {
+            if (meal.nutrition) {
+                acc.protein += meal.nutrition.protein || 0;
+                acc.carbs += meal.nutrition.carbs || 0;
+                acc.fats += meal.nutrition.fats || 0;
             }
-        };
+            return acc;
+        }, { protein: 0, carbs: 0, fats: 0 });
 
-        fetchMenu();
-    }, []);
-
-    const nutritionData = nutritionalDistribution;
+        const sum = totals.protein + totals.carbs + totals.fats || 1;
+        return [
+            { name: 'Protein', value: Math.round((totals.protein / sum) * 100), color: '#ef4444' },
+            { name: 'Carbs', value: Math.round((totals.carbs / sum) * 100), color: '#3b82f6' },
+            { name: 'Fats', value: Math.round((totals.fats / sum) * 100), color: '#f59e0b' },
+            { name: 'Fiber', value: 0, color: '#10b981' },
+        ];
+    })() : [
+        { name: 'Protein', value: 0, color: '#ef4444' },
+        { name: 'Carbs', value: 0, color: '#3b82f6' },
+        { name: 'Fats', value: 0, color: '#f59e0b' },
+        { name: 'Fiber', value: 0, color: '#10b981' },
+    ];
 
     // Derived radar data for a "Balanced Diet" visual
     const radarData = nutritionData.map(item => ({

@@ -5,7 +5,7 @@ export const useAnalytics = () => {
     return useQuery({
         queryKey: ['admin-analytics'],
         queryFn: adminApi.getAnalytics,
-        refetchInterval: 30000, // Refresh every 30 seconds
+        refetchInterval: 30000,
     });
 };
 
@@ -27,9 +27,30 @@ export const useUpdateStock = () => {
     });
 };
 
-export const useSchedule = (date, mealType) => {
+export const useSchedule = () => {
     return useQuery({
-        queryKey: ['admin-schedule', date, mealType],
-        queryFn: () => adminApi.getSchedule(date, mealType),
+        queryKey: ['admin-schedule'],
+        queryFn: adminApi.getSchedule,
+    });
+};
+
+export const useMenu = () => {
+    return useQuery({
+        queryKey: ['admin-menu'],
+        queryFn: adminApi.getMenu,
+    });
+};
+
+export const useDistributionTimeslots = () => {
+    return useQuery({
+        queryKey: ['admin-distribution'],
+        queryFn: adminApi.getDistributionTimeslots,
+    });
+};
+
+export const useStudentDemands = () => {
+    return useQuery({
+        queryKey: ['admin-students'],
+        queryFn: adminApi.getStudentDemands,
     });
 };

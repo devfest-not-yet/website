@@ -12,14 +12,31 @@ import {
     Calendar,
     LogOut
 } from 'lucide-react';
-import { getCurrentMealPeriod } from '@/data/mockData';
+import { getCurrentMealPeriod } from '@/utils/helpers';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
+import { useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
+import { adminApi } from '@/api/adminApi';
 
 const AdminLayout = () => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const location = useLocation();
     const { logout } = useAuth();
+    const queryClient = useQueryClient();
+
+    // Warm up the cache by prefetching critical data
+    useEffect(() => {
+        const prefetchData = async () => {
+            queryClient.prefetchQuery({ queryKey: ['admin-analytics'], queryFn: adminApi.getAnalytics });
+            queryClient.prefetchQuery({ queryKey: ['admin-stock'], queryFn: adminApi.getStock });
+            queryClient.prefetchQuery({ queryKey: ['admin-schedule'], queryFn: adminApi.getSchedule });
+            queryClient.prefetchQuery({ queryKey: ['admin-menu'], queryFn: adminApi.getMenu });
+            queryClient.prefetchQuery({ queryKey: ['admin-distribution'], queryFn: adminApi.getDistributionTimeslots });
+            queryClient.prefetchQuery({ queryKey: ['admin-students'], queryFn: adminApi.getStudentDemands });
+        };
+        prefetchData();
+    }, [queryClient]);
 
     const navigation = [
         { name: 'Dashboard', href: '/admin', icon: LayoutDashboard, exact: true },

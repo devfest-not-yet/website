@@ -15,32 +15,10 @@ import StatusBadge from '@/components/ui/StatusBadge';
 import DataTable from '@/components/ui/DataTable';
 
 const StockManagement = () => {
-    const [inventory, setInventory] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const { data: stockResponse, isLoading } = useStock();
+    const inventory = stockResponse?.data || [];
     const updateStockMutation = useUpdateStock();
     const [activeTab, setActiveTab] = useState('inventory');
-
-    React.useEffect(() => {
-        const fetchStock = async () => {
-            try {
-                const token = localStorage.getItem('auth_token');
-                const BASE_URL = import.meta.env.VITE_BASE_URL || 'https://backend-t08o.onrender.com/api';
-                const response = await fetch(`${BASE_URL}/admin/stock/list`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-                const data = await response.json();
-                setInventory(data.data || []);
-                setIsLoading(false);
-            } catch (error) {
-                console.error('Error fetching stock:', error);
-                setIsLoading(false);
-            }
-        };
-
-        fetchStock();
-    }, []);
 
     // Form state
     const [formData, setFormData] = useState({
@@ -318,8 +296,8 @@ const StockManagement = () => {
                                 <div className="glass-card p-6 bg-primary text-white border-none relative overflow-hidden group">
                                     <div className="flex justify-between items-start mb-10 relative z-10">
                                         <div>
-                                            <h4 className="text-white/60 text-xs font-bold uppercase tracking-widest mb-1">Total Assets Value</h4>
-                                            <h3 className="text-3xl font-bold">$12,450.00</h3>
+                                            <h4 className="text-white/60 text-xs font-bold uppercase tracking-widest mb-1">Total Ingredients</h4>
+                                            <h3 className="text-3xl font-bold">{inventory.length} Items</h3>
                                         </div>
                                         <div className="p-3 rounded-2xl bg-white/20">
                                             <Package size={24} />
@@ -327,9 +305,7 @@ const StockManagement = () => {
                                     </div>
                                     <div className="h-20 w-full relative z-10">
                                         <ResponsiveContainer width="100%" height="100%">
-                                            <AreaChart data={[
-                                                { v: 400 }, { v: 700 }, { v: 500 }, { v: 900 }, { v: 1100 }
-                                            ]}>
+                                            <AreaChart data={inventory.slice(0, 5).map(item => ({ v: item.available_quantity }))}>
                                                 <Area type="monotone" dataKey="v" stroke="#fff" strokeWidth={2} fill="transparent" />
                                             </AreaChart>
                                         </ResponsiveContainer>
@@ -341,9 +317,9 @@ const StockManagement = () => {
                                     <h4 className="font-bold mb-4">Storage Capacity</h4>
                                     <div className="space-y-4">
                                         {[
-                                            { label: 'Dry Storage', val: 78, color: 'bg-indigo-500' },
-                                            { label: 'Cold Storage', val: 92, color: 'bg-sky-500' },
-                                            { label: 'Frozen Section', val: 45, color: 'bg-emerald-500' },
+                                            { label: 'Dry Storage', val: inventory.length > 0 ? 45 : 0, color: 'bg-indigo-500' },
+                                            { label: 'Cold Storage', val: inventory.length > 0 ? 30 : 0, color: 'bg-sky-500' },
+                                            { label: 'Frozen Section', val: inventory.length > 0 ? 15 : 0, color: 'bg-emerald-500' },
                                         ].map((item, i) => (
                                             <div key={i} className="space-y-2">
                                                 <div className="flex justify-between text-xs font-bold uppercase tracking-wider">

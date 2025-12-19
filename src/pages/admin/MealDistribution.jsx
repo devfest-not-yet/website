@@ -3,48 +3,34 @@ import { AreaChart, Area, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
 import { Users, Clock, Timer, TrendingUp, CheckCircle2, AlertCircle, Activity, MapPin } from 'lucide-react';
 import DataTable from '@/components/ui/DataTable';
 import StatusBadge from '@/components/ui/StatusBadge';
-import { pickupTimeslots, distributionChartData } from '@/data/mockData';
-import { motion } from 'framer-motion';
+import { useDistributionTimeslots } from '@/hooks/useAdmin';
 
 const MealDistribution = () => {
-    const [timeslots, setTimeslots] = React.useState([]);
-    const [isLoading, setIsLoading] = React.useState(true);
-    const distributionData = distributionChartData;
+    const { data: distributionResponse, isLoading } = useDistributionTimeslots();
+    const timeslots = React.useMemo(() => {
+        return (distributionResponse?.data || []).map(slot => ({
+            ...slot,
+            studentCount: slot.studentsCount || 0
+        }));
+    }, [distributionResponse]);
 
-    React.useEffect(() => {
-        const fetchTimeslots = async () => {
-            try {
-                const token = localStorage.getItem('auth_token');
-                const BASE_URL = import.meta.env.VITE_BASE_URL || 'https://backend-t08o.onrender.com/api';
-                const response = await fetch(`${BASE_URL}/admin/distribution/timeslots`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-                const data = await response.json();
-                // Map backend response fields to component props if needed
-                const mappedTimeslots = (data.data || []).map(slot => ({
-                    ...slot,
-                    studentCount: slot.studentsCount || 0
-                }));
-
-                setTimeslots(mappedTimeslots);
-                setIsLoading(false);
-            } catch (error) {
-                console.error('Error fetching timeslots:', error);
-                setIsLoading(false);
-            }
-        };
-
-        fetchTimeslots();
-    }, []);
+    // Compute distribution data from timeslots
+    const distributionData = React.useMemo(() => {
+        return timeslots.map(slot => ({
+            time: slot.timeSlot?.split(' ')[0] || '',
+            count: slot.studentCount || slot.studentsCount || 0,
+            waitTime: 5 // Default wait time
+        }));
+    }, [timeslots]);
 
     const totalStudents = timeslots.reduce((sum, slot) => sum + slot.studentCount, 0);
     const completedSlots = timeslots.filter(slot => slot.status === 'completed');
     const studentsServed = completedSlots.reduce((sum, slot) => sum + slot.studentCount, 0);
 
     const avgWaitTime = Math.round(
-        distributionData.reduce((sum, item) => sum + item.waitTime, 0) / distributionData.length
+        distributionData.length > 0
+            ? distributionData.reduce((sum, item) => sum + item.waitTime, 0) / distributionData.length
+            : 0
     );
 
     const columns = [

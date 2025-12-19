@@ -1,13 +1,9 @@
 /**
  * Authentication Service
- * Mock implementation for development - replace with real API calls later
  */
 
 const TOKEN_KEY = "auth_token";
 const USER_KEY = "auth_user";
-
-// Simulate API delay
-const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 import apiClient from '@/api/client';
 
@@ -46,46 +42,35 @@ export const loginAPI = async (email, password) => {
 };
 
 /**
- * Mock signup API call
+ * Real signup API call
  * @param {Object} userData - User registration data
  * @returns {Promise<Object>} User data and token
  */
 export const signupAPI = async (userData) => {
-    await delay(1000); // Simulate network delay
+    try {
+        const response = await apiClient.post('auth/signup', userData);
+        const { data } = response.data;
 
-    const { name, email, password } = userData;
-
-    // Mock validation
-    if (!name || !email || !password) {
-        throw new Error("All fields are required");
+        return {
+            user: data.user,
+            token: data.token,
+        };
+    } catch (error) {
+        const message = error.response?.data?.message || error.message || 'Signup failed';
+        throw new Error(message);
     }
-
-    // Determine user role based on email
-    const role = email.toLowerCase().includes("admin") ? "admin" : "student";
-
-    // Mock successful signup
-    const mockUser = {
-        id: Math.random().toString(36).substr(2, 9),
-        name: name,
-        email: email,
-        role: role,
-    };
-
-    const mockToken = `mock_token_${Date.now()}`;
-
-    return {
-        user: mockUser,
-        token: mockToken,
-    };
 };
 
 /**
- * Mock logout API call
+ * Logout API call
  * @returns {Promise<void>}
  */
 export const logoutAPI = async () => {
-    await delay(300);
-    // In real implementation, you might want to invalidate the token on the server
+    try {
+        await apiClient.post('auth/logout');
+    } catch (error) {
+        console.error('Logout failed:', error);
+    }
     return Promise.resolve();
 };
 
@@ -98,10 +83,13 @@ export const getCurrentUserAPI = async (token) => {
     if (!token) return null;
 
     try {
-        // In this implementation, we rely on the stored user data if the token exists.
-        // A true implementation would call a /me endpoint to verify the token.
+        // First check local storage for immediate UI update
         const storedUser = localStorage.getItem(USER_KEY);
-        return storedUser ? JSON.parse(storedUser) : null;
+        if (storedUser) return JSON.parse(storedUser);
+
+        // Fetch fresh user data from server
+        const response = await apiClient.get('auth/me');
+        return response.data.data;
     } catch (error) {
         return null;
     }
