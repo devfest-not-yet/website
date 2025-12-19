@@ -2,6 +2,16 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 const StatusBadge = ({ status, label }) => {
+    // Handle undefined or null status
+    if (!status) {
+        return (
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border bg-muted text-muted-foreground border-border">
+                <span className="w-1 h-1 rounded-full bg-current mr-1.5 opacity-60" />
+                {label || 'N/A'}
+            </span>
+        );
+    }
+
     const getStatusStyles = () => {
         const base = "inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border transition-all duration-300";
 
@@ -36,7 +46,7 @@ const StatusBadge = ({ status, label }) => {
 };
 
 StatusBadge.propTypes = {
-    status: PropTypes.string.isRequired,
+    status: PropTypes.string,
     label: PropTypes.string,
 };
 

@@ -19,7 +19,7 @@ const Dashboard = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold text-foreground">
-              DevFest Dashboard
+              SmartMeal AI Dashboard
             </h1>
             <Button variant="outline" onClick={handleLogout}>
               Logout
@@ -142,7 +142,7 @@ const Dashboard = () => {
       <footer className="mt-12 py-6 border-t border-border">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <p className="text-center text-sm text-muted-foreground">
-            &copy; 2025 DevFest. Built with React + Vite + Tailwind CSS.
+            &copy; 2025 SmartMeal AI. Built with React + Vite + Tailwind CSS.
           </p>
         </div>
       </footer>

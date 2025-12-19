@@ -176,7 +176,7 @@ const SignUp = () => {
                             Create Account
                         </h1>
                         <p className="text-muted-foreground">
-                            Sign up to get started with DevFest
+                            Sign up to get started with SmartMeal AI
                         </p>
                     </div>
 

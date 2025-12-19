@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { ChevronUp, ChevronDown, Search } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const DataTable = ({ columns, data }) => {
+const DataTable = ({ columns, data, onRowClick, selectedRowId }) => {
     const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
     const [searchTerm, setSearchTerm] = useState('');
 
@@ -87,10 +87,15 @@ const DataTable = ({ columns, data }) => {
                                         initial={{ opacity: 0 }}
                                         animate={{ opacity: 1 }}
                                         exit={{ opacity: 0 }}
-                                        className="hover:bg-primary/5 transition-colors group"
+                                        onClick={() => onRowClick && onRowClick(row)}
+                                        className={`
+                                            transition-colors group
+                                            ${onRowClick ? 'cursor-pointer' : ''}
+                                            ${selectedRowId === row.id ? 'bg-primary/10' : 'hover:bg-primary/5'}
+                                        `}
                                     >
                                         {columns.map((column) => (
-                                            <td key={column.key} className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                            <td key={column.key} className="px-6 py-4 text-sm font-medium">
                                                 {column.render ? column.render(row[column.key], row) : row[column.key]}
                                             </td>
                                         ))}
@@ -125,4 +130,3 @@ DataTable.propTypes = {
 };
 
 export default DataTable;
-

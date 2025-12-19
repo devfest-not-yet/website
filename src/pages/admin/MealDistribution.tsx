@@ -1,45 +1,39 @@
 import React from 'react';
-import { AreaChart, Area, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar } from 'recharts';
-import { Users, Clock, Timer, TrendingUp, CheckCircle2, AlertCircle, Activity, MapPin } from 'lucide-react';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import { Users, Clock, Timer, TrendingUp, CheckCircle2, Activity, MapPin } from 'lucide-react';
 import DataTable from '@/components/ui/DataTable';
-import StatusBadge from '@/components/ui/StatusBadge';
 import { useDistributionTimeslots } from '@/hooks/useAdmin';
-import { motion, AnimatePresence } from 'framer-motion';
+import type { TimeslotDistribution } from '@/api/types';
+import { motion } from 'framer-motion';
 
-const MealDistribution = () => {
-    const { data: distributionResponse, isLoading } = useDistributionTimeslots();
-    const timeslots = React.useMemo(() => {
-        return (distributionResponse?.data || []).map(slot => ({
-            ...slot,
-            studentCount: slot.studentsCount || 0
-        }));
+const MealDistribution: React.FC = () => {
+    const { data: distributionResponse } = useDistributionTimeslots();
+    const timeslots: TimeslotDistribution[] = React.useMemo(() => {
+        return (distributionResponse?.success && distributionResponse.data) ? distributionResponse.data : [];
     }, [distributionResponse]);
 
     // Compute distribution data from timeslots
     const distributionData = React.useMemo(() => {
         return timeslots.map(slot => ({
-            time: slot.timeSlot?.split(' ')[0] || '',
-            count: slot.studentCount || slot.studentsCount || 0,
+            time: slot.pickup_time_start.substring(0, 5), // 'HH:mm'
+            count: slot.count,
             waitTime: 5 // Default wait time
         }));
     }, [timeslots]);
 
-    const totalStudents = timeslots.reduce((sum, slot) => sum + slot.studentCount, 0);
-    const completedSlots = timeslots.filter(slot => slot.status === 'completed');
-    const studentsServed = completedSlots.reduce((sum, slot) => sum + slot.studentCount, 0);
+    const totalStudents = timeslots.reduce((sum, slot) => sum + slot.count, 0);
+    const studentsServed = totalStudents; // Assuming all returned slots are 'served' or 'planned'
 
-    const avgWaitTime = Math.round(
-        distributionData.length > 0
-            ? distributionData.reduce((sum, item) => sum + item.waitTime, 0) / distributionData.length
-            : 0
-    );
+    // avgWaitTime based on distributionData waitTime which is current mock 5
+    const avgWaitTime = 5;
+
 
     const columns = [
         {
-            key: 'timeSlot',
+            key: 'timeslot',
             label: 'Time Slot',
             sortable: true,
-            render: (value) => (
+            render: (value: string) => (
                 <div className="flex items-center gap-2 font-bold text-muted-foreground">
                     <Clock size={14} />
                     <span>{value}</span>
@@ -47,36 +41,30 @@ const MealDistribution = () => {
             ),
         },
         {
-            key: 'mealType',
+            key: 'meal_type',
             label: 'Meal Type',
             sortable: true,
-            render: (value) => (
+            render: (value: string) => (
                 <span className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">{value}</span>
             ),
         },
         {
-            key: 'studentCount',
-            label: 'Expected',
+            key: 'count',
+            label: 'Served Count',
             sortable: true,
-            render: (value) => (
+            render: (value: number) => (
                 <div className="flex items-center gap-2">
                     <Users size={14} className="text-muted-foreground" />
                     <span className="font-bold">{value}</span>
                 </div>
             ),
         },
-        {
-            key: 'status',
-            label: 'Status',
-            sortable: true,
-            render: (value) => <StatusBadge status={value} />,
-        },
     ];
 
     const stats = [
         { label: 'Total Expected', value: totalStudents, icon: Users, color: 'text-indigo-600', bg: 'bg-indigo-600/10', trend: '+12% vs last year' },
         { label: 'Students Served', value: studentsServed, icon: CheckCircle2, color: 'text-success', bg: 'bg-success/10', trend: 'On track' },
-        { label: 'Avg Wait Time', value: `${avgWaitTime}m`, icon: Timer, color: 'text-warning', bg: 'bg-warning/10', trend: '-2m optimization' },
+        { label: 'Avg Wait Time', value: `${avgWaitTime} m`, icon: Timer, color: 'text-warning', bg: 'bg-warning/10', trend: '-2m optimization' },
         { label: 'System Load', value: 'Normal', icon: Activity, color: 'text-primary', bg: 'bg-primary/10', trend: 'Stable flow' },
     ];
 
@@ -105,7 +93,7 @@ const MealDistribution = () => {
                         className="glass-card p-6 border-border/40 hover:shadow-premium transition-all duration-300"
                     >
                         <div className="flex justify-between items-start mb-4">
-                            <div className={`p-2 rounded-xl ${stat.bg} ${stat.color}`}>
+                            <div className={`p - 2 rounded - xl ${stat.bg} ${stat.color} `}>
                                 <stat.icon size={20} />
                             </div>
                             <div className="flex items-center gap-1 text-[10px] font-bold text-success">

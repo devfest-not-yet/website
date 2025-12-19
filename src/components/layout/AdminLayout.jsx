@@ -30,7 +30,7 @@ const AdminLayout = () => {
         const prefetchData = async () => {
             queryClient.prefetchQuery({ queryKey: ['admin-analytics'], queryFn: adminApi.getAnalytics });
             queryClient.prefetchQuery({ queryKey: ['admin-stock'], queryFn: adminApi.getStock });
-            queryClient.prefetchQuery({ queryKey: ['admin-schedule'], queryFn: adminApi.getSchedule });
+            queryClient.prefetchQuery({ queryKey: ['admin-schedule'], queryFn: adminApi.getTodaySchedule });
             queryClient.prefetchQuery({ queryKey: ['admin-menu'], queryFn: adminApi.getMenu });
             queryClient.prefetchQuery({ queryKey: ['admin-distribution'], queryFn: adminApi.getDistributionTimeslots });
             queryClient.prefetchQuery({ queryKey: ['admin-students'], queryFn: adminApi.getStudentDemands });
@@ -90,13 +90,9 @@ const AdminLayout = () => {
                 <div className="h-full flex flex-col">
                     {/* Header */}
                     <div className="p-8">
-                        <div className="flex items-center gap-3 mb-8">
-                            <div className="w-12 h-12 flex items-center justify-center">
-                                <img src="/src/assets/logo-ai.png" alt="Logo" className="w-full h-full object-contain" />
-                            </div>
-                            <h1 className="text-xl font-bold tracking-tight">
-                                DevFest <span className="text-primary">Eats</span>
-                            </h1>
+                        <div className="flex items-center gap-3 mb-10">
+                            <img src="/images/smartmeal-logo.png" alt="SmartMeal AI Logo" className="w-10 h-10 object-contain" />
+                            <img src="/images/smartmeal-logo-text.png" alt="SmartMeal AI" className="h-8 object-contain" />
                         </div>
 
                         <div className="space-y-4">
