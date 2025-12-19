@@ -25,6 +25,14 @@ export default {
                     DEFAULT: "hsl(var(--destructive))",
                     foreground: "hsl(var(--destructive-foreground))",
                 },
+                success: {
+                    DEFAULT: "hsl(var(--success))",
+                    foreground: "hsl(var(--success-foreground))",
+                },
+                warning: {
+                    DEFAULT: "hsl(var(--warning))",
+                    foreground: "hsl(var(--warning-foreground))",
+                },
                 muted: {
                     DEFAULT: "hsl(var(--muted))",
                     foreground: "hsl(var(--muted-foreground))",
@@ -43,25 +51,30 @@ export default {
                 },
             },
             borderRadius: {
-                lg: "var(--radius)",
-                md: "calc(var(--radius) - 2px)",
-                sm: "calc(var(--radius) - 4px)",
+                xl: "var(--radius)",
+                lg: "calc(var(--radius) - 2px)",
+                md: "calc(var(--radius) - 4px)",
+                sm: "calc(var(--radius) - 6px)",
+            },
+            boxShadow: {
+                premium: "var(--shadow-premium)",
             },
             keyframes: {
                 "fade-in": {
                     "0%": { opacity: "0", transform: "translateY(10px)" },
                     "100%": { opacity: "1", transform: "translateY(0)" },
                 },
-                "slide-in": {
-                    "0%": { transform: "translateX(-100%)" },
-                    "100%": { transform: "translateX(0)" },
-                },
+                "reveal": {
+                    "0%": { opacity: "0", transform: "translateY(20px)" },
+                    "100%": { opacity: "1", transform: "translateY(0)" },
+                }
             },
             animation: {
                 "fade-in": "fade-in 0.5s ease-out",
-                "slide-in": "slide-in 0.3s ease-out",
+                "reveal": "reveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards",
             },
         },
     },
     plugins: [],
 }
+

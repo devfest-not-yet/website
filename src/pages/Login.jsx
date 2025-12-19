@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { validateEmail } from "@/utilities/validators";
+import { motion, AnimatePresence } from "framer-motion";
+import { Mail, Lock, Eye, EyeOff, ArrowLeft, ChevronRight, Loader2, Utensils } from "lucide-react";
 
 const Login = () => {
     const navigate = useNavigate();
@@ -24,7 +26,7 @@ const Login = () => {
     // Redirect if already authenticated
     useEffect(() => {
         if (isAuthenticated && !authLoading) {
-            navigate("/dashboard");
+            navigate("/admin");
         }
     }, [isAuthenticated, authLoading, navigate]);
 
@@ -75,7 +77,6 @@ const Login = () => {
 
         try {
             await login(formData.email, formData.password);
-            // Navigation happens automatically via useEffect when isAuthenticated changes
         } catch (error) {
             setApiError(error.message || "Login failed. Please try again.");
         } finally {
@@ -84,42 +85,102 @@ const Login = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-secondary/5 px-4 py-12">
-            <div className="w-full max-w-md">
-                <div className="bg-card border border-border rounded-lg shadow-lg p-8 animate-fade-in">
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="min-h-screen flex items-center justify-center bg-background px-4 py-12 relative overflow-hidden"
+        >
+            {/* Background Decoration */}
+            <div className="absolute inset-0 overflow-hidden -z-10">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px]" />
+                <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-indigo-500/5 rounded-full blur-[80px]" />
+            </div>
+
+            <div className="w-full max-w-[440px] relative">
+                {/* Back Link */}
+                <motion.div
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="mb-8"
+                >
+                    <Link
+                        to="/"
+                        className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-primary transition-colors group"
+                    >
+                        <ArrowLeft className="mr-2 w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+                        Back to landing
+                    </Link>
+                </motion.div>
+
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, ease: "easeOut" }}
+                    className="glass-card p-8 sm:p-10 shadow-premium border-white/20"
+                >
+                    {/* Brand */}
+                    <div className="flex justify-center mb-8">
+                        <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
+                            <Utensils className="w-6 h-6 text-white" />
+                        </div>
+                    </div>
+
                     {/* Header */}
-                    <div className="text-center mb-8">
-                        <h1 className="text-3xl font-bold text-foreground mb-2">
-                            Welcome Back
+                    <div className="text-center mb-10">
+                        <h1 className="text-3xl font-bold tracking-tight mb-2">
+                            Welcome back
                         </h1>
-                        <p className="text-muted-foreground">
-                            Sign in to your account to continue
+                        <p className="text-muted-foreground text-sm font-medium">
+                            Enter your credentials to access the workspace
                         </p>
                     </div>
 
                     {/* API Error Message */}
-                    {apiError && (
-                        <div className="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-md">
-                            <p className="text-sm text-destructive text-center">{apiError}</p>
-                        </div>
-                    )}
+                    <AnimatePresence mode="wait">
+                        {apiError && (
+                            <motion.div
+                                initial={{ opacity: 0, height: 0, mb: 0 }}
+                                animate={{ opacity: 1, height: "auto", mb: 24 }}
+                                exit={{ opacity: 0, height: 0, mb: 0 }}
+                                className="overflow-hidden"
+                            >
+                                <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-xl flex items-center gap-3">
+                                    <div className="w-2 h-2 rounded-full bg-destructive flex-shrink-0" />
+                                    <p className="text-xs font-semibold text-destructive">{apiError}</p>
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
 
                     {/* Login Form */}
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        <Input
-                            type="email"
-                            name="email"
-                            label="Email"
-                            placeholder="you@example.com"
-                            value={formData.email}
-                            onChange={handleChange}
-                            error={errors.email}
-                            disabled={isLoading}
-                            autoComplete="email"
-                        />
+                    <form onSubmit={handleSubmit} className="space-y-5">
+                        <div className="space-y-2">
+                            <div className="relative group">
+                                <div className="absolute left-4 top-[42px] text-muted-foreground group-focus-within:text-primary transition-colors">
+                                    <Mail className="w-4 h-4" />
+                                </div>
+                                <Input
+                                    type="email"
+                                    name="email"
+                                    label="Email address"
+                                    placeholder="name@company.com"
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                    error={errors.email}
+                                    disabled={isLoading}
+                                    autoComplete="email"
+                                    className="pl-11 h-12 rounded-xl bg-muted/30 border-muted-foreground/10 focus:bg-background transition-all"
+                                />
+                            </div>
+                        </div>
 
-                        <div>
-                            <div className="relative">
+                        <div className="space-y-2">
+                            <div className="relative group">
+                                <div className="absolute left-4 top-[42px] text-muted-foreground group-focus-within:text-primary transition-colors">
+                                    <Lock className="w-4 h-4" />
+                                </div>
                                 <Input
                                     type={showPassword ? "text" : "password"}
                                     name="password"
@@ -130,39 +191,36 @@ const Login = () => {
                                     error={errors.password}
                                     disabled={isLoading}
                                     autoComplete="current-password"
+                                    className="pl-11 h-12 rounded-xl bg-muted/30 border-muted-foreground/10 focus:bg-background transition-all"
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-[38px] text-muted-foreground hover:text-foreground transition-colors"
+                                    className="absolute right-4 top-[42px] text-muted-foreground hover:text-primary transition-colors"
                                     tabIndex={-1}
                                 >
-                                    {showPassword ? (
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                            <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                                            <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
-                                        </svg>
-                                    ) : (
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                            <path fillRule="evenodd" d="M3.707 2.293a1 1 0 00-1.414 1.414l14 14a1 1 0 001.414-1.414l-1.473-1.473A10.014 10.014 0 0019.542 10C18.268 5.943 14.478 3 10 3a9.958 9.958 0 00-4.512 1.074l-1.78-1.781zm4.261 4.26l1.514 1.515a2.003 2.003 0 012.45 2.45l1.514 1.514a4 4 0 00-5.478-5.478z" clipRule="evenodd" />
-                                            <path d="M12.454 16.697L9.75 13.992a4 4 0 01-3.742-3.741L2.335 6.578A9.98 9.98 0 00.458 10c1.274 4.057 5.065 7 9.542 7 .847 0 1.669-.105 2.454-.303z" />
-                                        </svg>
-                                    )}
+                                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                                 </button>
                             </div>
                         </div>
 
-                        <div className="flex items-center justify-between">
-                            <Checkbox
-                                name="rememberMe"
-                                label="Remember me"
-                                checked={formData.rememberMe}
-                                onChange={handleChange}
-                                disabled={isLoading}
-                            />
+                        <div className="flex items-center justify-between pt-1">
+                            <div className="flex items-center gap-2">
+                                <Checkbox
+                                    name="rememberMe"
+                                    id="rememberMe"
+                                    checked={formData.rememberMe}
+                                    onChange={handleChange}
+                                    disabled={isLoading}
+                                    className="w-4 h-4 rounded border-muted-foreground/20 text-primary focus:ring-primary/20"
+                                />
+                                <label htmlFor="rememberMe" className="text-xs font-semibold text-muted-foreground cursor-pointer select-none hover:text-foreground transition-colors">
+                                    Stay signed in
+                                </label>
+                            </div>
                             <Link
                                 to="/forgot-password"
-                                className="text-sm text-primary hover:underline"
+                                className="text-xs font-bold text-primary hover:text-primary/80 transition-colors"
                             >
                                 Forgot password?
                             </Link>
@@ -170,40 +228,34 @@ const Login = () => {
 
                         <Button
                             type="submit"
-                            className="w-full"
-                            loading={isLoading}
+                            className="w-full h-12 rounded-xl text-sm font-bold shadow-lg shadow-primary/20 transition-all active:scale-[0.98]"
                             disabled={isLoading}
                         >
-                            {isLoading ? "Signing in..." : "Sign In"}
+                            {isLoading ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                                <>
+                                    Sign In to Dashboard
+                                    <ChevronRight className="ml-1 w-4 h-4" />
+                                </>
+                            )}
                         </Button>
                     </form>
+                </motion.div>
 
-                    {/* Sign Up Link */}
-                    <div className="mt-6 text-center">
-                        <p className="text-sm text-muted-foreground">
-                            Don&apos;t have an account?{" "}
-                            <Link
-                                to="/signup"
-                                className="text-primary font-medium hover:underline"
-                            >
-                                Sign up
-                            </Link>
-                        </p>
-                    </div>
-
-                    {/* Back to Home */}
-                    <div className="mt-4 text-center">
-                        <Link
-                            to="/"
-                            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                        >
-                            ← Back to home
-                        </Link>
-                    </div>
-                </div>
+                {/* Footer Info */}
+                <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.4 }}
+                    className="mt-8 text-center text-xs text-muted-foreground font-medium"
+                >
+                    Don't have access? <Link to="/contact" className="text-primary font-bold hover:underline">Contact Administrator</Link>
+                </motion.p>
             </div>
-        </div>
+        </motion.div>
     );
 };
 
 export default Login;
+

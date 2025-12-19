@@ -9,33 +9,40 @@ const USER_KEY = "auth_user";
 // Simulate API delay
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+import apiClient from '@/api/client';
+
 /**
- * Mock login API call
+ * Real login API call
  * @param {string} email - User email
  * @param {string} password - User password
  * @returns {Promise<Object>} User data and token
  */
 export const loginAPI = async (email, password) => {
-    await delay(1000); // Simulate network delay
+    try {
+        const response = await apiClient.post('auth/admin/login', { email, password });
+        const { success, data, message } = response.data;
 
-    // Mock validation
-    if (!email || !password) {
-        throw new Error("Email and password are required");
+        if (!success && response.status !== 200) {
+            throw new Error(message || 'Login failed');
+        }
+
+        // Handle various backend response structures (student, user, or direct data)
+        const userData = data.admin || data.student || data.user || (data.email ? data : null);
+        const token = data.token || response.data.token;
+
+        if (!token) {
+            throw new Error('No authentication token received from server');
+        }
+
+        // Return user and token in expected format
+        return {
+            user: userData || { email, role: 'admin' }, // Fallback to basic info if missing
+            token: token,
+        };
+    } catch (error) {
+        const message = error.response?.data?.message || error.message || 'Login failed';
+        throw new Error(message);
     }
-
-    // Mock successful login (accept any credentials for now)
-    const mockUser = {
-        id: Math.random().toString(36).substr(2, 9),
-        name: email.split("@")[0],
-        email: email,
-    };
-
-    const mockToken = `mock_token_${Date.now()}`;
-
-    return {
-        user: mockUser,
-        token: mockToken,
-    };
 };
 
 /**
@@ -53,11 +60,15 @@ export const signupAPI = async (userData) => {
         throw new Error("All fields are required");
     }
 
+    // Determine user role based on email
+    const role = email.toLowerCase().includes("admin") ? "admin" : "student";
+
     // Mock successful signup
     const mockUser = {
         id: Math.random().toString(36).substr(2, 9),
         name: name,
         email: email,
+        role: role,
     };
 
     const mockToken = `mock_token_${Date.now()}`;
@@ -79,26 +90,21 @@ export const logoutAPI = async () => {
 };
 
 /**
- * Get current user from token
+ * Get current user from token (validation)
  * @param {string} token - Auth token
  * @returns {Promise<Object|null>} User data or null
  */
 export const getCurrentUserAPI = async (token) => {
-    await delay(500);
+    if (!token) return null;
 
-    if (!token) {
+    try {
+        // In this implementation, we rely on the stored user data if the token exists.
+        // A true implementation would call a /me endpoint to verify the token.
+        const storedUser = localStorage.getItem(USER_KEY);
+        return storedUser ? JSON.parse(storedUser) : null;
+    } catch (error) {
         return null;
     }
-
-    // Mock: decode token and return user
-    // In real app, you'd validate the token with the server
-    const storedUser = localStorage.getItem(USER_KEY);
-
-    if (storedUser) {
-        return JSON.parse(storedUser);
-    }
-
-    return null;
 };
 
 /**
