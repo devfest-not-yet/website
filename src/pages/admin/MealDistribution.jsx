@@ -4,6 +4,7 @@ import { Users, Clock, Timer, TrendingUp, CheckCircle2, AlertCircle, Activity, M
 import DataTable from '@/components/ui/DataTable';
 import StatusBadge from '@/components/ui/StatusBadge';
 import { useDistributionTimeslots } from '@/hooks/useAdmin';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const MealDistribution = () => {
     const { data: distributionResponse, isLoading } = useDistributionTimeslots();

@@ -165,7 +165,11 @@ const MenuPlanner = () => {
                                     <Zap className="w-5 h-5 text-indigo-600 mt-0.5" />
                                     <div>
                                         <p className="text-sm font-bold text-indigo-950 dark:text-indigo-200">AI Nutrition Insight</p>
-                                        <p className="text-xs font-medium text-indigo-600/80 mt-1">High protein content confirmed. Consider adding more Vitamin C rich fruits to breakfast.</p>
+                                        <p className="text-xs font-medium text-indigo-600/80 mt-1">
+                                            {menu.length > 0
+                                                ? "Nutritional balance analyzed. Current menu provides a diverse range of macros suitable for student health."
+                                                : "Awaiting menu generation for AI analysis."}
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -203,17 +207,21 @@ const MenuPlanner = () => {
                         </h4>
                         <div className="space-y-4">
                             {[
-                                { label: 'Proteins', current: 85, target: 100, color: 'bg-emerald-500' },
-                                { label: 'Carbs', current: 65, target: 100, color: 'bg-blue-500' },
-                                { label: 'Fats', current: 40, target: 100, color: 'bg-amber-500' },
+                                { label: 'Proteins', current: menu.reduce((acc, m) => acc + (m.nutrition?.protein || 0), 0), target: 100, color: 'bg-emerald-500' },
+                                { label: 'Carbs', current: menu.reduce((acc, m) => acc + (m.nutrition?.carbs || 0), 0), target: 100, color: 'bg-blue-500' },
+                                { label: 'Fats', current: menu.reduce((acc, m) => acc + (m.nutrition?.fats || 0), 0), target: 100, color: 'bg-amber-500' },
                             ].map((goal, i) => (
                                 <div key={i} className="space-y-2">
                                     <div className="flex justify-between text-xs font-bold uppercase tracking-wider">
                                         <span className="text-muted-foreground">{goal.label}</span>
-                                        <span>{goal.current}/{goal.target}g</span>
+                                        <span>{Math.round(goal.current)}/{goal.target}g</span>
                                     </div>
                                     <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
-                                        <motion.div initial={{ width: 0 }} animate={{ width: `${goal.current}%` }} className={`h-full ${goal.color}`} />
+                                        <motion.div
+                                            initial={{ width: 0 }}
+                                            animate={{ width: `${Math.min((goal.current / goal.target) * 100, 100)}%` }}
+                                            className={`h-full ${goal.color}`}
+                                        />
                                     </div>
                                 </div>
                             ))}

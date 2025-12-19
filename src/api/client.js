@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_BASE_URL || 'https://backend-t08o.onrender.com/api';
+const API_BASE_URL = (import.meta.env.VITE_BASE_URL || 'https://backend-t08o.onrender.com/api').replace(/\/?$/, '/');
 
 const apiClient = axios.create({
     baseURL: API_BASE_URL,
