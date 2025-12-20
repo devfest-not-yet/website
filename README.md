@@ -2,7 +2,7 @@ Smartmeal AI
 
 A modern, full-featured React application built with cutting-edge technologies for optimal performance and developer experience.
 
-## 🌐 Live Demo
+## Live Demo
 
 **[View Live Demo](https://smartmeal-dashboard.netlify.app/)**
 
@@ -80,7 +80,7 @@ Check and fix code quality issues:
 npm run lint
 ```
 
-## 🏗️ Tech Stack
+## Tech Stack
 
 ### Core
 
@@ -168,7 +168,7 @@ Delightful user experience with:
 - Floating effects
 - Smooth interactions via Framer Motion
 
-## 🔧 Configuration
+## Configuration
 
 ### Environment Variables
 
