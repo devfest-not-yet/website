@@ -4,9 +4,9 @@ A modern, full-featured React application built with cutting-edge technologies f
 
 ## 🌐 Live Demo
 
-**[View Live Demo](https://smartmeal-dashboard.netlify.app/)** ✨
+**[View Live Demo](https://smartmeal-dashboard.netlify.app/)**
 
-## 🚀 Features
+## Features
 
 - **Modern UI/UX**: Beautiful, responsive interface with smooth animations
 - **Analytics Dashboard**: Interactive data visualizations and insights
@@ -15,14 +15,14 @@ A modern, full-featured React application built with cutting-edge technologies f
 - **Type-Safe**: Built with TypeScript for enhanced reliability
 - **Optimized Performance**: Lightning-fast development and production builds
 
-## 📋 Prerequisites
+## Prerequisites
 
 Before you begin, ensure you have the following installed:
 
 - Node.js (v18 or higher)
 - npm or yarn package manager
 
-## 🛠️ Installation
+## Installation
 
 1. Clone the repository:
 
@@ -44,7 +44,7 @@ cp .env.example .env
 
 4. Configure your environment variables in `.env`
 
-## 🚦 Getting Started
+## Getting Started
 
 ### Development Mode
 
@@ -111,7 +111,7 @@ npm run lint
 - **PostCSS** - CSS transformation
 - **Autoprefixer** - Cross-browser compatibility
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 ├── src/
@@ -133,7 +133,7 @@ npm run lint
 └── package.json         # Dependencies and scripts
 ```
 
-## 🎨 Key Features Explained
+## Key Features Explained
 
 ### Authentication
 
@@ -195,7 +195,7 @@ export default {
 };
 ```
 
-## 📝 Available Scripts
+## Available Scripts
 
 | Command           | Description              |
 | ----------------- | ------------------------ |
@@ -204,7 +204,7 @@ export default {
 | `npm run preview` | Preview production build |
 | `npm run lint`    | Run ESLint               |
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please follow these steps:
 
@@ -214,11 +214,11 @@ Contributions are welcome! Please follow these steps:
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - Built with [React](https://react.dev/)
 - Powered by [Vite](https://vitejs.dev/)
