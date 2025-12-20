@@ -261,7 +261,7 @@ const MenuPlanner: React.FC = () => {
                     (acc, m) => acc + (m.nutrition?.protein || 0),
                     0
                   ),
-                  target: 100,
+                  target: 1000,
                   color: "bg-emerald-500",
                 },
                 {
@@ -270,7 +270,7 @@ const MenuPlanner: React.FC = () => {
                     (acc, m) => acc + (m.nutrition?.carbs || 0),
                     0
                   ),
-                  target: 100,
+                  target: 1000,
                   color: "bg-blue-500",
                 },
                 {
@@ -279,7 +279,7 @@ const MenuPlanner: React.FC = () => {
                     (acc, m) => acc + (m.nutrition?.fats || 0),
                     0
                   ),
-                  target: 100,
+                  target: 1000,
                   color: "bg-amber-500",
                 },
               ].map((goal, i) => (

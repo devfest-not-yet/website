@@ -166,20 +166,21 @@ const StockManagement: React.FC = () => {
             exit={{ opacity: 0, y: -10 }}
             className="space-y-4"
           >
-            {/* Top Row: Alerts & Quick Update */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-              {/* Low Stock Alerts Hub */}
-              <div className="lg:col-span-8">
+            {/* Main Layout Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+              {/* Left Column: Alerts & Inventory List */}
+              <div className="lg:col-span-8 space-y-6">
+                {/* Low Stock Alerts Hub */}
                 <AnimatePresence>
                   {lowStockItems.length > 0 ? (
                     <motion.div
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      className="glass-card border-destructive/20 bg-destructive/5 p-6 h-full relative overflow-hidden"
+                      className="glass-card border-destructive/20 bg-destructive/5 p-4 relative overflow-hidden"
                     >
-                      <div className="relative z-10 flex items-start gap-4">
-                        <div className="p-3 rounded-2xl bg-destructive/10 text-destructive">
-                          <AlertTriangle size={24} />
+                      <div className="relative z-10 flex items-start gap-3">
+                        <div className="p-2 rounded-xl bg-destructive/10 text-destructive">
+                          <AlertTriangle size={20} />
                         </div>
                         <div>
                           <h3 className="text-lg font-bold text-destructive">
@@ -190,7 +191,7 @@ const StockManagement: React.FC = () => {
                             thresholds. Immediate reorder recommended.
                           </p>
                           <div className="flex flex-wrap gap-2 mt-4">
-                            {lowStockItems.map((item) => (
+                            {lowStockItems.slice(0, 4).map((item) => (
                               <span
                                 key={item.stock_id}
                                 className="px-2 py-1 rounded-lg bg-destructive/10 text-[10px] font-bold uppercase tracking-wider border border-destructive/20"
@@ -200,6 +201,11 @@ const StockManagement: React.FC = () => {
                                 {item.ingredient.unit}
                               </span>
                             ))}
+                            {lowStockItems.length > 4 && (
+                              <span className="px-2 py-1 rounded-lg bg-destructive/10 text-[10px] font-bold uppercase tracking-wider border border-destructive/20">
+                                +{lowStockItems.length - 4} More
+                              </span>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -208,21 +214,34 @@ const StockManagement: React.FC = () => {
                       </div>
                     </motion.div>
                   ) : (
-                    <div className="glass-card p-12 border-dashed border-border flex flex-col items-center justify-center text-center h-full opacity-60">
-                      <Package size={40} className="text-muted-foreground mb-4 opacity-20" />
-                      <h3 className="font-bold text-muted-foreground">Stock Levels Healthy</h3>
-                      <p className="text-xs text-muted-foreground font-medium mt-1">No critical reorders required currently.</p>
+                    <div className="glass-card p-6 border-dashed border-border flex flex-row items-center justify-center gap-4 text-center opacity-60">
+                      <div className="p-3 bg-muted rounded-full">
+                        <Package size={24} className="text-muted-foreground opacity-50" />
+                      </div>
+                      <div className="text-left">
+                        <h3 className="font-bold text-muted-foreground text-sm">Stock Levels Healthy</h3>
+                        <p className="text-[10px] text-muted-foreground font-medium">No critical reorders required currently.</p>
+                      </div>
                     </div>
                   )}
                 </AnimatePresence>
+
+                {/* Main Table */}
+                <div className="glass-card p-6">
+                  <h3 className="text-lg font-bold mb-6 flex items-center gap-2">
+                    <Filter size={18} className="text-muted-foreground" />
+                    Inventory Overview
+                  </h3>
+                  <DataTable columns={columns} data={inventory} />
+                </div>
               </div>
 
-              {/* Quick Update Form */}
+              {/* Right Column: Quick Update Form */}
               <div className="lg:col-span-4">
-                <div className="glass-card p-8 bg-indigo-600 border-none text-white shadow-premium h-full">
-                  <div className="flex items-center gap-3 mb-8">
-                    <div className="p-3 rounded-2xl bg-white/10">
-                      <PackagePlus size={24} />
+                <div className="glass-card p-4 bg-indigo-600 border-none text-white shadow-premium">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="p-2 rounded-xl bg-white/10">
+                      <PackagePlus size={20} />
                     </div>
                     <div>
                       <h3 className="text-lg font-bold">Quick Update</h3>
@@ -259,9 +278,9 @@ const StockManagement: React.FC = () => {
                         }
                       }
                     }}
-                    className="space-y-5"
+                    className="space-y-3"
                   >
-                    <div className="space-y-2">
+                    <div className="space-y-1">
                       <label className="text-[10px] font-bold uppercase tracking-widest text-white/60 ml-1">
                         Item Name
                       </label>
@@ -277,11 +296,11 @@ const StockManagement: React.FC = () => {
                           }))
                         }
                         required
-                        className="w-full h-12 px-4 rounded-xl bg-white/10 border border-white/10 text-white placeholder:text-white/40 focus:outline-none focus:bg-white/20 transition-all font-medium"
+                        className="w-full h-9 px-3 rounded-lg bg-white/10 border border-white/10 text-white placeholder:text-white/40 focus:outline-none focus:bg-white/20 transition-all font-medium text-sm"
                       />
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1">
                         <label className="text-[10px] font-bold uppercase tracking-widest text-white/60 ml-1">
                           Quantity
                         </label>
@@ -298,10 +317,10 @@ const StockManagement: React.FC = () => {
                           }
                           required
                           min="0"
-                          className="w-full h-12 px-4 rounded-xl bg-white/10 border border-white/10 text-white placeholder:text-white/40 focus:outline-none focus:bg-white/20 transition-all font-medium"
+                          className="w-full h-9 px-3 rounded-lg bg-white/10 border border-white/10 text-white placeholder:text-white/40 focus:outline-none focus:bg-white/20 transition-all font-medium text-sm"
                         />
                       </div>
-                      <div className="space-y-2">
+                      <div className="space-y-1">
                         <label className="text-[10px] font-bold uppercase tracking-widest text-white/60 ml-1">
                           Unit
                         </label>
@@ -314,7 +333,7 @@ const StockManagement: React.FC = () => {
                               unit: e.target.value,
                             }))
                           }
-                          className="w-full h-12 px-4 rounded-xl bg-white/10 border border-white/10 text-white focus:outline-none focus:bg-white/20 transition-all font-bold"
+                          className="w-full h-9 px-3 rounded-lg bg-white/10 border border-white/10 text-white focus:outline-none focus:bg-white/20 transition-all font-bold text-sm"
                         >
                           <option value="kg" className="text-foreground">KG</option>
                           <option value="liters" className="text-foreground">LTR</option>
@@ -327,7 +346,7 @@ const StockManagement: React.FC = () => {
                       <button
                         type="submit"
                         disabled={updateStockMutation.isPending}
-                        className="flex-1 h-14 rounded-2xl bg-white text-indigo-600 font-bold hover:bg-white/90 active:scale-95 transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-50"
+                        className="flex-1 h-10 rounded-xl bg-white text-indigo-600 font-bold hover:bg-white/90 active:scale-95 transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-50 text-sm"
                       >
                         {updateStockMutation.isPending ? "Saving..." : "Save Change"}
                         <Save size={18} />
@@ -336,15 +355,6 @@ const StockManagement: React.FC = () => {
                   </form>
                 </div>
               </div>
-            </div>
-
-            {/* Bottom Row: Main Table */}
-            <div className="glass-card p-6">
-              <h3 className="text-lg font-bold mb-6 flex items-center gap-2">
-                <Filter size={18} className="text-muted-foreground" />
-                Inventory Overview
-              </h3>
-              <DataTable columns={columns} data={inventory} />
             </div>
           </motion.div>
         ) : (

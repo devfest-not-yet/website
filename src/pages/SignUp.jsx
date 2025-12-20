@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import logoV2 from "@/assets/logo-v2.png";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/Button";
@@ -172,6 +173,7 @@ const SignUp = () => {
                 <div className="bg-card border border-border rounded-lg shadow-lg p-8 animate-fade-in">
                     {/* Header */}
                     <div className="text-center mb-8">
+                        <img src={logoV2} alt="SmartMeal AI Logo" className="w-20 h-20 object-contain mx-auto mb-6 drop-shadow-xl" />
                         <h1 className="text-3xl font-bold text-foreground mb-2">
                             Create Account
                         </h1>

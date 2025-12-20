@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import StatusBadge from "@/components/ui/StatusBadge";
-import DataTable from "@/components/ui/DataTable";
+
 
 const CookingSchedule: React.FC = () => {
   const { data: scheduleResponse, isLoading } = useSchedule();
@@ -49,63 +49,70 @@ const CookingSchedule: React.FC = () => {
     }));
   }, [schedule]);
 
+  const groupedSchedule = React.useMemo(() => {
+    const groups: Record<string, any> = {};
+
+    schedule.forEach((item) => {
+      // 1. Get raw values with fallbacks
+      const rawName = item.meal?.name || (item as any).mealName || (item as any).meal_name || "Unknown Meal";
+      const rawType = item.meal_type || (item as any).mealType || (item as any).category || "OTHER";
+
+      // Handle time more robustly - handle HH:mm:ss and ISO strings
+      let startH = "00";
+      let startM = "00";
+
+      const rawTime = item.pickup_time_start || (item as any).startTime;
+      if (rawTime) {
+        const timeStr = String(rawTime);
+        // Match 07:00, 7:00, 07:00:00, etc.
+        const matches = timeStr.match(/(\d{1,2})[:.](\d{2})/);
+        if (matches) {
+          startH = matches[1].padStart(2, '0');
+          startM = matches[2];
+        }
+      }
+
+      const timeKey = `${startH}:${startM}`;
+
+      // 2. Normalize Key components
+      // Lowercase, remove special chars, single spaces
+      const nameKey = String(rawName).toLowerCase().replace(/[^a-z0-9]/g, '');
+      const typeKey = String(rawType).toLowerCase().trim();
+
+      // Final unique key: name + time + type
+      const key = `${nameKey}_${timeKey}_${typeKey}`;
+
+      const quantity = parseInt(String((item as any).quantity || 1), 10);
+
+      if (!groups[key]) {
+        groups[key] = {
+          ...item,
+          normalizedName: String(rawName).trim(), // Keep original formatting for display
+          normalizedTime: timeKey,
+          normalizedType: String(rawType).trim().toUpperCase(),
+          servings: quantity,
+          is_completed: !!(item.picked_up || (item as any).status === "completed")
+        };
+      } else {
+        groups[key].servings += quantity;
+        // If any item in the group is not completed, the whole group is pending
+        if (!item.picked_up && (item as any).status !== "completed") {
+          groups[key].is_completed = false;
+        }
+      }
+    });
+
+    return Object.values(groups).sort((a, b) => {
+      return a.normalizedTime.localeCompare(b.normalizedTime);
+    });
+  }, [schedule]);
+
   const totalMeals = schedule.length;
-  const completedMeals = schedule.filter((m) => m.picked_up).length;
+  const completedMeals = schedule.filter((m) => m.picked_up || (m as any).status === "completed").length;
   const completionRate =
     totalMeals > 0 ? Math.round((completedMeals / totalMeals) * 100) : 0;
 
-  const columns = [
-    {
-      key: "meal",
-      label: "Meal Name",
-      sortable: true,
-      render: (value: any) => (
-        <div className="flex items-center gap-3 text-foreground">
-          <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-            <ChefHat size={14} className="text-primary" />
-          </div>
-          <div>
-            <div className="font-bold">{value?.name}</div>
-            <div className="text-[10px] text-muted-foreground uppercase font-black tracking-tight">
-              {value?.category}
-            </div>
-          </div>
-        </div>
-      ),
-    },
-    {
-      key: "pickup_time_start",
-      label: "Schedule Slot",
-      sortable: true,
-      render: (value: any, row: any) => (
-        <div className="flex items-center gap-2 font-bold text-muted-foreground">
-          <Clock size={14} />
-          <span>
-            {value} - {row.pickup_time_end}
-          </span>
-        </div>
-      ),
-    },
-    {
-      key: "quantity",
-      label: "Servings",
-      sortable: true,
-      render: (value: any) => (
-        <div className="flex items-center gap-2">
-          <Users size={14} className="text-muted-foreground" />
-          <span className="font-bold">{value}</span>
-        </div>
-      ),
-    },
-    {
-      key: "status",
-      label: "Status",
-      sortable: true,
-      render: (_: any, row: any) => (
-        <StatusBadge status={row.picked_up ? "completed" : "pending"} />
-      ),
-    },
-  ];
+
 
   if (isLoading) {
     return (
@@ -124,7 +131,7 @@ const CookingSchedule: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="space-y-1">
           <h1 className="text-4xl font-black tracking-tight flex items-center gap-3 italic">
-            Cooking Schedule
+            Cooking Schedule (Grouped)
             <div className="px-3 py-1 bg-orange-500/10 text-orange-500 rounded-full text-[10px] font-black uppercase tracking-widest border border-orange-500/20">
               Active
             </div>
@@ -169,95 +176,97 @@ const CookingSchedule: React.FC = () => {
             </div>
 
             <div className="space-y-4">
-              {schedule.map((assignment, index) => (
-                <motion.div
-                  key={assignment.assignment_id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  className="group relative pl-10 border-l-2 border-dashed border-border/40 pb-6 last:pb-0"
-                >
-                  {/* Timeline Node */}
-                  <div
-                    className="absolute left-[-11px] top-1 w-5 h-5 rounded-full z-10 p-1 bg-background border-2 transition-transform group-hover:scale-125 duration-300"
-                    style={{
-                      borderColor: getMealTypeColor(assignment.meal_type),
-                    }}
-                  >
-                    <div
-                      className="w-full h-full rounded-full"
-                      style={{
-                        backgroundColor: getMealTypeColor(assignment.meal_type),
-                      }}
-                    />
-                  </div>
+              {groupedSchedule.map((assignment, index) => {
+                const mealName = assignment.normalizedName;
+                const mealType = assignment.normalizedType;
+                const startTime = assignment.normalizedTime;
+                const isCompleted = assignment.is_completed;
 
-                  <div className="glass-card p-4 hover:shadow-premium transition-all duration-500 border-border/40 group-hover:border-primary/30 group-hover:transform group-hover:-translate-y-1 bg-white/50 dark:bg-muted/5">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                      <div className="flex items-center gap-4">
-                        <div className="hidden sm:flex flex-col items-center justify-center w-16 h-16 rounded-xl bg-background border border-border/50 shadow-inner">
-                          <span className="text-[9px] font-black text-muted-foreground uppercase opacity-60 tracking-tighter">
-                            Ready At
-                          </span>
-                          <span className="text-lg font-black tracking-tighter text-primary">
-                            {assignment.pickup_time_start.split(":")[0]}:
-                            {assignment.pickup_time_start.split(":")[1]}
-                          </span>
-                        </div>
-                        <div>
-                          <h4 className="font-bold text-lg text-foreground flex items-center gap-2 group-hover:text-primary transition-colors">
-                            {assignment.meal.name}
-                            {assignment.picked_up && (
-                              <CheckCircle2
-                                size={16}
-                                className="text-success"
-                              />
-                            )}
-                          </h4>
-                          <div className="flex items-center gap-2 mt-1.5">
-                            <span
-                              className="text-[10px] font-black px-2 py-0.5 rounded-md text-white uppercase tracking-widest shadow-sm"
-                              style={{
-                                backgroundColor: getMealTypeColor(
-                                  assignment.meal_type
-                                ),
-                              }}
-                            >
-                              {assignment.meal_type}
+                return (
+                  <motion.div
+                    key={`${mealName}-${startTime}-${index}`}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    className="group relative pl-10 border-l-2 border-dashed border-border/40 pb-6 last:pb-0"
+                  >
+                    {/* Timeline Node */}
+                    <div
+                      className="absolute left-[-11px] top-1 w-5 h-5 rounded-full z-10 p-1 bg-background border-2 transition-transform group-hover:scale-125 duration-300"
+                      style={{
+                        borderColor: getMealTypeColor(mealType),
+                      }}
+                    >
+                      <div
+                        className="w-full h-full rounded-full"
+                        style={{
+                          backgroundColor: getMealTypeColor(mealType),
+                        }}
+                      />
+                    </div>
+
+                    <div className="glass-card p-4 hover:shadow-premium transition-all duration-500 border-border/40 group-hover:border-primary/30 group-hover:transform group-hover:-translate-y-1 bg-white/50 dark:bg-muted/5">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div className="flex items-center gap-4">
+                          <div className="hidden sm:flex flex-col items-center justify-center w-16 h-16 rounded-xl bg-background border border-border/50 shadow-inner">
+                            <span className="text-[9px] font-black text-muted-foreground uppercase opacity-60 tracking-tighter">
+                              Ready At
+                            </span>
+                            <span className="text-lg font-black tracking-tighter text-primary">
+                              {startTime}
                             </span>
                           </div>
+                          <div>
+                            <h4 className="font-bold text-lg text-foreground flex items-center gap-2 group-hover:text-primary transition-colors">
+                              {mealName}
+                              {isCompleted && (
+                                <CheckCircle2
+                                  size={16}
+                                  className="text-success"
+                                />
+                              )}
+                            </h4>
+                            <div className="flex items-center gap-3 mt-2">
+                              <span
+                                className="text-[10px] font-black px-2 py-0.5 rounded-md text-white uppercase tracking-widest shadow-sm"
+                                style={{
+                                  backgroundColor: getMealTypeColor(
+                                    mealType
+                                  ),
+                                }}
+                              >
+                                {mealType}
+                              </span>
+                              <div className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-primary/10 border border-primary/20 text-primary">
+                                <Users size={14} className="stroke-[3px]" />
+                                <span className="text-xs font-black uppercase tracking-wide">
+                                  {assignment.servings} Servings
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-end gap-3 pt-4 md:pt-0 border-t md:border-t-0 border-border/20">
+                          <StatusBadge
+                            status={
+                              isCompleted ? "completed" : "pending"
+                            }
+                          />
+                          {!isCompleted && (
+                            <button className="flex items-center justify-center p-2 rounded-lg bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all active:scale-90 shadow-sm">
+                              <Play size={16} className="ml-0.5" />
+                            </button>
+                          )}
                         </div>
                       </div>
-                      <div className="flex items-center justify-end gap-3 pt-4 md:pt-0 border-t md:border-t-0 border-border/20">
-                        <StatusBadge
-                          status={
-                            assignment.picked_up ? "completed" : "pending"
-                          }
-                        />
-                        {!assignment.picked_up && (
-                          <button className="flex items-center justify-center p-2 rounded-lg bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all active:scale-90 shadow-sm">
-                            <Play size={16} className="ml-0.5" />
-                          </button>
-                        )}
-                      </div>
                     </div>
-                  </div>
-                </motion.div>
-              ))}
+                  </motion.div>
+                );
+              })}
             </div>
           </div>
 
-          <div className="glass-card p-0 overflow-hidden border-border/40 text-foreground">
-            <div className="p-6 border-b border-border/40 flex items-center justify-between">
-              <h3 className="text-xl font-bold">Service Logistics</h3>
-              <span className="text-[10px] font-black px-3 py-1 rounded-full bg-muted border border-border uppercase tracking-widest text-muted-foreground">
-                {schedule.length} Total Units
-              </span>
-            </div>
-            <div className="p-2">
-              <DataTable columns={columns} data={schedule} />
-            </div>
-          </div>
+
         </div>
 
         {/* Insights Section - 5 columns */}

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import logoV2 from '@/assets/logo-v2.png';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import {
     LayoutDashboard,
@@ -10,7 +11,9 @@ import {
     X,
     Clock,
     Calendar,
-    LogOut
+    LogOut,
+    Sun,
+    Moon
 } from 'lucide-react';
 import { getCurrentMealPeriod } from '@/utils/helpers';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -18,11 +21,13 @@ import { useAuth } from '@/context/AuthContext';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { adminApi } from '@/api/adminApi';
+import { useTheme } from '@/context/ThemeContext';
 
 const AdminLayout = () => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const location = useLocation();
     const { logout } = useAuth();
+    const { theme, toggleTheme } = useTheme();
     const queryClient = useQueryClient();
 
     // Warm up the cache by prefetching critical data
@@ -91,7 +96,7 @@ const AdminLayout = () => {
                     {/* Header */}
                     <div className="p-8">
                         <div className="flex items-center gap-3 mb-10">
-                            <img src="/images/smartmeal-logo.png" alt="SmartMeal AI Logo" className="w-10 h-10 object-contain" />
+                            <img src={logoV2} alt="SmartMeal AI Logo" className="w-12 h-12 object-contain" />
                             <img src="/images/smartmeal-logo-text.png" alt="SmartMeal AI" className="h-8 object-contain" />
                         </div>
 
@@ -181,6 +186,12 @@ const AdminLayout = () => {
                     <div className="flex-1" />
 
                     <div className="flex items-center gap-3 lg:gap-6">
+                        <button
+                            onClick={toggleTheme}
+                            className="p-2 rounded-xl bg-background/50 hover:bg-muted text-muted-foreground hover:text-primary transition-all active:scale-95"
+                        >
+                            {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+                        </button>
                         <div className="h-8 w-px bg-border/60 mx-1" />
                         <div className="flex items-center gap-3">
                             <div className="text-right hidden sm:block">

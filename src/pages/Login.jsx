@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import logoV2 from "@/assets/logo-v2.png";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/Button";
@@ -6,10 +7,12 @@ import { Input } from "@/components/ui/Input";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { validateEmail } from "@/utilities/validators";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mail, Lock, Eye, EyeOff, ArrowLeft, ChevronRight, Loader2, Utensils } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, ArrowLeft, ChevronRight, Loader2, Sun, Moon } from "lucide-react";
+import { useTheme } from "@/context/ThemeContext";
 
 const Login = () => {
     const navigate = useNavigate();
+    const { theme, toggleTheme } = useTheme();
     const { login, isAuthenticated, isLoading: authLoading } = useAuth();
 
     const [formData, setFormData] = useState({
@@ -97,6 +100,16 @@ const Login = () => {
                 <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-indigo-500/5 rounded-full blur-[80px]" />
             </div>
 
+            {/* Theme Toggle */}
+            <div className="absolute top-6 right-6 z-50">
+                <button
+                    onClick={toggleTheme}
+                    className="p-3 rounded-full glass hover:bg-primary/10 transition-all active:scale-95 shadow-lg"
+                >
+                    {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+                </button>
+            </div>
+
             <div className="w-full max-w-[440px] relative">
                 {/* Back Link */}
                 <motion.div
@@ -121,10 +134,8 @@ const Login = () => {
                     className="glass-card p-8 sm:p-10 shadow-premium border-white/20"
                 >
                     {/* Brand */}
-                    <div className="flex justify-center mb-8">
-                        <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
-                            <Utensils className="w-6 h-6 text-white" />
-                        </div>
+                    <div className="flex justify-center mb-4">
+                        <img src={logoV2} alt="SmartMeal AI Logo" className="w-24 h-24 object-contain filter drop-shadow-[0_0_15px_rgba(249,115,22,0.3)]" />
                     </div>
 
                     {/* Header */}

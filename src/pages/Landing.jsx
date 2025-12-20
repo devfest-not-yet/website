@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import logoV2 from "@/assets/logo-v2.png";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/Button";
@@ -23,11 +24,15 @@ import {
   Sparkles,
   BarChart3,
   CheckCircle2,
+  Sun,
+  Moon
 } from "lucide-react";
+import { useTheme } from "@/context/ThemeContext";
 
 const Landing = () => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
+  const { theme, toggleTheme } = useTheme();
 
   // Redirect to admin panel if already authenticated
   useEffect(() => {
@@ -203,24 +208,32 @@ const Landing = () => {
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-3">
             <img
-              src="/images/smartmeal-logo.png"
+              src={logoV2}
               alt="SmartMeal AI Logo"
-              className="w-10 h-10"
+              className="w-12 h-12 object-contain"
             />
             <img
               src="/images/smartmeal-logo-text.png"
               alt="SmartMeal AI"
-              className="h-8"
+              className="h-8 object-contain"
             />
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate("/login")}
-            className="font-medium hover:bg-primary/5"
-          >
-            Sign In
-          </Button>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-xl bg-background/50 hover:bg-muted text-muted-foreground hover:text-primary transition-all active:scale-95"
+            >
+              {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+            </button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate("/login")}
+              className="font-medium hover:bg-primary/5"
+            >
+              Sign In
+            </Button>
+          </div>
         </div>
       </nav>
 
@@ -458,11 +471,10 @@ const Landing = () => {
                   <button
                     key={index}
                     onClick={() => setCurrentTestimonial(index)}
-                    className={`w-2 h-2 rounded-full transition-all ${
-                      index === currentTestimonial
-                        ? "bg-primary w-8"
-                        : "bg-muted-foreground/30"
-                    }`}
+                    className={`w-2 h-2 rounded-full transition-all ${index === currentTestimonial
+                      ? "bg-primary w-8"
+                      : "bg-muted-foreground/30"
+                      }`}
                     aria-label={`Go to testimonial ${index + 1}`}
                   />
                 ))}
@@ -516,9 +528,9 @@ const Landing = () => {
             <div className="col-span-1 md:col-span-2">
               <div className="flex items-center gap-2 mb-4">
                 <img
-                  src="/images/smartmeal-logo.png"
+                  src={logoV2}
                   alt="SmartMeal AI Logo"
-                  className="w-8 h-8"
+                  className="w-10 h-10 object-contain"
                 />
                 <span className="font-bold tracking-tight">SmartMeal AI</span>
               </div>
