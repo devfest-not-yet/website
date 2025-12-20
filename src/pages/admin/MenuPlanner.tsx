@@ -124,14 +124,6 @@ const MenuPlanner: React.FC = () => {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          {/* <button
-                        onClick={handleAIGenerate}
-                        disabled={isProcessing}
-                        className="h-11 px-6 rounded-xl bg-primary text-white font-bold hover:scale-[1.02] transition-transform active:scale-95 shadow-lg flex items-center gap-2 disabled:opacity-50"
-                    >
-                        {isProcessing ? <Loader2 size={18} className="animate-spin" /> : <Sparkles size={18} />}
-                        {isProcessing ? 'Processing AI...' : 'AI Suggest Menu'}
-                    </button> */}
         </div>
       </div>
 

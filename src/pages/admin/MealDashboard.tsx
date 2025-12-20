@@ -17,18 +17,9 @@ const MealDashboard: React.FC = () => {
     const [launchSuccess, setLaunchSuccess] = React.useState(false);
     const { mutate: launchAI, isPending: isLaunchingAI } = useLaunchAI();
 
-    // Check for previous launch in the last 24h
+    // AI launch state logic (Restriction removed for demo)
     React.useEffect(() => {
-        const lastLaunch = localStorage.getItem('lastAILaunch');
-        if (lastLaunch) {
-            const lastLaunchDate = new Date(parseInt(lastLaunch));
-            const now = new Date();
-            const hoursSinceLastLaunch = (now.getTime() - lastLaunchDate.getTime()) / (1000 * 60 * 60);
-
-            if (hoursSinceLastLaunch < 24) {
-                setLaunchSuccess(true);
-            }
-        }
+        setLaunchSuccess(false);
     }, []);
 
     const handleLaunchAI = () => {
@@ -36,6 +27,8 @@ const MealDashboard: React.FC = () => {
             onSuccess: () => {
                 setLaunchSuccess(true);
                 localStorage.setItem('lastAILaunch', Date.now().toString());
+                // Reset after 5 seconds for demo purposes so it can be shown again
+                setTimeout(() => setLaunchSuccess(false), 5000);
             }
         });
     };
@@ -155,12 +148,12 @@ const MealDashboard: React.FC = () => {
                         ) : launchSuccess ? (
                             <>
                                 <CheckCircle2 className="w-4 h-4" />
-                                <span>Done</span>
+                                <span>AI Launcher</span>
                             </>
                         ) : (
                             <>
                                 <Zap className="w-4 h-4 fill-current" />
-                                <span>Launch AI</span>
+                                <span>AI Launcher</span>
                             </>
                         )}
 
